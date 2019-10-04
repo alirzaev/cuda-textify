@@ -59,19 +59,26 @@ namespace textify {
 
     gpu_gaussian_filter create_gpu_gaussian_filter(double sigma) {
         const size_t filter_sz = 55;
-        double *host_ptr = (double *) malloc(filter_sz * sizeof(double));
+        auto *host_ptr_u = (unsigned int *) malloc(filter_sz * sizeof(unsigned int));
+        auto *host_ptr_d = (double *) malloc(filter_sz * sizeof(double));
         double sum = 0;
         for (size_t i = 0; i < filter_sz; ++i) {
-            host_ptr[i] = gaussian(sigma, i - filter_sz / 2);
-            sum += host_ptr[i];
+            host_ptr_d[i] = gaussian(sigma, i - filter_sz / 2);
+            sum += host_ptr_d[i];
         }
         for (size_t i = 0; i < filter_sz; ++i) {
-            host_ptr[i] /= sum;
+            host_ptr_d[i] /= sum;
+        }
+        for (size_t i = 0; i < filter_sz; ++i) {
+            host_ptr_u[i] = (unsigned int)(1024 * host_ptr_d[i]);
         }
 
-        double *device_ptr;
-        cuda_helpers::malloc((void **) &device_ptr, filter_sz * sizeof(double));
-        cuda_helpers::copy_host2device(device_ptr, host_ptr, filter_sz * sizeof(double));
+        unsigned int *device_ptr;
+        cuda_helpers::malloc((void **) &device_ptr, filter_sz * sizeof(unsigned int));
+        cuda_helpers::copy_host2device(device_ptr, host_ptr_u, filter_sz * sizeof(unsigned int));
+
+        free(host_ptr_u);
+        free(host_ptr_d);
 
         return gpu_gaussian_filter{
                 device_ptr,

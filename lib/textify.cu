@@ -18,11 +18,11 @@ static __global__ void gpu_gaussian_blur_h(
         return;
     }
 
-    double *filter = gpu_filter.ptr;
+    auto *filter = gpu_filter.ptr;
     size_t filter_sz = gpu_filter.size;
 
     dlib::rgb_pixel p = src.pixels[y * width + x];
-    double r = 0, g = 0, b = 0;
+    unsigned int r = 0, g = 0, b = 0;
 
     for (long k = filter_sz / -2; k <= filter_sz / 2; ++k) {
         if (k + x >= width || k + x < 0) {
@@ -33,9 +33,9 @@ static __global__ void gpu_gaussian_blur_h(
         g += t.green * filter[k + filter_sz / 2];
         b += t.blue * filter[k + filter_sz / 2];
     }
-    p.red = r;
-    p.green = g;
-    p.blue = b;
+    p.red = r / 1024;
+    p.green = g / 1024;
+    p.blue = b / 1024;
     dst.pixels[y * width + x] = p;
 }
 
@@ -51,11 +51,11 @@ static __global__ void gpu_gaussian_blur_v(
         return;
     }
 
-    double *filter = gpu_filter.ptr;
+    auto *filter = gpu_filter.ptr;
     size_t filter_sz = gpu_filter.size;
 
     dlib::rgb_pixel p = src.pixels[y * width + x];
-    double r = 0, g = 0, b = 0;
+    unsigned int r = 0, g = 0, b = 0;
 
     for (long k = filter_sz / -2; k <= filter_sz / 2; ++k) {
         if (k + y >= height || k + y < 0) {
@@ -66,9 +66,9 @@ static __global__ void gpu_gaussian_blur_v(
         g += t.green * filter[k + filter_sz / 2];
         b += t.blue * filter[k + filter_sz / 2];
     }
-    p.red = r;
-    p.green = g;
-    p.blue = b;
+    p.red = r / 1024;
+    p.green = g / 1024;
+    p.blue = b / 1024;
     dst.pixels[y * width + x] = p;
 }
 
